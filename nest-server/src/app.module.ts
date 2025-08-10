@@ -1,9 +1,39 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SharedModule } from './shared/shared.module';
 import { ConfigurationService } from './shared/configuration/configuration.service';
+import { UserModule } from './controllers/users/user.module';
+import { AuthModule } from './controllers/auth/auth.module';
 
 @Module({
+  imports: [
+    SharedModule,
+    MongooseModule.forRootAsync({
+      useFactory: async (configService: ConfigurationService) => ({
+        uri: configService.mongoUri,
+        connectionFactory: (connection) => {
+          connection.on('error', (error) => {
+            console.error('MongoDB connection error:', error);
+            console.log('Application will continue without MongoDB connection');
+          });
+          connection.on('connected', () => {
+            console.log('MongoDB connected successfully');
+          });
+          return connection;
+        },
+        // Allow the application to start even if MongoDB is not available
+        connectionErrorFactory: (error) => {
+          console.error('MongoDB connection error:', error);
+          return error;
+        },
+      }),
+      inject: [ConfigurationService],
+    }),
+    UserModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
