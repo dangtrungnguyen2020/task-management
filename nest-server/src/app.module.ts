@@ -6,6 +6,8 @@ import { SharedModule } from './shared/shared.module';
 import { ConfigurationService } from './shared/configuration/configuration.service';
 import { UserModule } from './controllers/users/user.module';
 import { AuthModule } from './controllers/auth/auth.module';
+import { TasksModule } from './controllers/projects/tasks/task.module';
+import { ProjectModule } from './controllers/projects/project.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { AuthModule } from './controllers/auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    TasksModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

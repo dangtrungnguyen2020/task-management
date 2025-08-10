@@ -1,0 +1,50 @@
+import { prop, getModelForClass } from '@typegoose/typegoose';
+import { BaseModel, schemaOptions } from './base.model';
+import { Constants } from '../shared/utils/constants';
+import { Gender } from './gender.enum';
+
+export class User extends BaseModel {
+  @prop()
+  username?: string;
+
+  @prop({
+    required: [true, 'EMail is required'],
+    unique: true,
+    match: Constants.EmailRegex,
+  })
+  email: string;
+
+  @prop({
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters'],
+  })
+  password: string;
+
+  @prop({ default: null })
+  lastLoginDate: Date;
+
+  @prop()
+  firstName?: string;
+
+  @prop()
+  lastName?: string;
+
+  @prop()
+  deviceId?: string;
+
+  @prop()
+  birthDate?: Date;
+
+  @prop({ enum: Object.keys(Gender) })
+  gender?: Gender;
+
+  static get model() {
+    return getModelForClass(User, { schemaOptions });
+  }
+
+  static get modelName(): string {
+    return this.model.modelName;
+  }
+}
+
+export const ClientModel = User.model;
