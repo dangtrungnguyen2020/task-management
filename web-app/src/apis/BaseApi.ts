@@ -86,7 +86,7 @@ export default class BaseApi {
         throw new Error(`API call failed with status: ${response.statusText}`);
       }
 
-      return await response.json();
+      return response;
     } catch (error) {
       console.error("Error in fetchWithAuth:", error);
       throw error;

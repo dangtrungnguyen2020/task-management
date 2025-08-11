@@ -10,13 +10,29 @@ class ProjectApi extends BaseApi {
         }
       );
 
-      if (!response || !response.length) {
+      if (!response.ok) {
         throw new Error("Failed to fetch projects");
       }
 
-      return response;
+      return await response.json();
     } catch (error) {
       console.error("Error fetching projects:", error);
+      throw error;
+    }
+  }
+
+  async getById(projectId: string) {
+    try {
+      const response = await this.fetchWithAuth(
+        `${this.BASE_URL}/api/projects/${projectId}`,
+        { method: "GET" }
+      );
+      if (!response.ok) {
+        throw new Error("Fail to fetch project by id " + projectId);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching project:", error);
       throw error;
     }
   }
@@ -30,11 +46,9 @@ class ProjectApi extends BaseApi {
           body: JSON.stringify({ title, description }),
         }
       );
-
       if (!response.ok) {
         throw new Error("Failed to create project");
       }
-
       return await response.json();
     } catch (error) {
       console.error("Error creating project:", error);
@@ -51,11 +65,9 @@ class ProjectApi extends BaseApi {
           body: JSON.stringify({ title, description }),
         }
       );
-
       if (!response.ok) {
         throw new Error("Failed to update project");
       }
-
       return await response.json();
     } catch (error) {
       console.error("Error updating project:", error);
@@ -71,11 +83,9 @@ class ProjectApi extends BaseApi {
           method: "DELETE",
         }
       );
-
       if (!response.ok) {
         throw new Error("Failed to delete project");
       }
-
       return true;
     } catch (error) {
       console.error("Error deleting project:", error);

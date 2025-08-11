@@ -8,10 +8,14 @@ class TaskApi extends BaseApi {
     };
 
     try {
-      return await this.fetchWithAuth(
+      const response = await this.fetchWithAuth(
         `${this.BASE_URL}/api/projects/${projectId}/tasks`,
         requestOptions
       );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch all tasks: ${response.statusText}`);
+      }
+      return await response.json();
     } catch (err) {
       console.error("Error fetching tasks:", err);
       // toast.error("Failed to fetch tasks.");
@@ -36,10 +40,14 @@ class TaskApi extends BaseApi {
     const method = isUpdate ? "PUT" : "POST";
 
     try {
-      return await this.fetchWithAuth(url, {
+      const response = await this.fetchWithAuth(url, {
         method: method,
         body: data,
       });
+      if (!response.ok) {
+        throw new Error(`Failed to create task: ${response.statusText}`);
+      }
+      return await response.json();
     } catch (error) {
       console.error("Error in API call:", error);
       throw error;
@@ -68,15 +76,13 @@ class TaskApi extends BaseApi {
     };
 
     try {
-      const response = await fetch(url, requestOptions);
+      const response = await this.fetchWithAuth(url, requestOptions);
 
       if (!response.ok) {
         throw new Error(`Failed to delete task: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      // toast.success("Tasks Deleted Successfully");
-      return result;
+      return await response.json();
     } catch (error) {
       console.error("Error in deleteTasksAPI:", error);
       throw error;

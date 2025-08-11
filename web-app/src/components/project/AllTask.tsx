@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiEdit, FiTrash, FiPlusCircle } from "react-icons/fi";
 import taskApi from "../../apis/TaskApi";
+import projectApi from "../../apis/ProjectApi";
 import CreateTasks from "./CreateTasks";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "../../redux/userSlice";
@@ -31,16 +32,15 @@ const AllTask: React.FC = () => {
   const [isUpdate, setIsUpdate] = useState<boolean>(false);
   const [isTasksLoading, setIsTasksLoading] = useState<boolean>(true);
 
-  // You might want to fetch project details here to display the title
-  // I'll add a placeholder useEffect for this.
-  // In a real app, you would dispatch an action to get project details
   useEffect(() => {
-    if (projectId && selectedProject?._id !== projectId) {
-      // You would fetch the project details here and dispatch setSelectedProject
-      // For now, let's just log it.
+    if (!selectedProject || selectedProject?._id !== projectId) {
+      projectId &&
+        projectApi.getById(projectId).then((data) => {
+          dispatch(setSelectedProject(data));
+        });
       console.log(`Fetching details for project: ${projectId}`);
     }
-  }, [projectId, selectedProject, dispatch]);
+  }, []);
 
   const getAllTasksFromApi = async () => {
     setIsTasksLoading(true);
