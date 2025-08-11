@@ -1,0 +1,59 @@
+# Define the services (containers) for your application.
+services:
+  # The frontend service (React application).
+  web-app:
+    # Build the image from the Dockerfile located in the 'client' directory.
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    # Map port 3000 on the host to port 80 in the container.
+    # This allows you to access the React app at http://localhost:3000.
+    ports:
+      - "3000:80"
+    # This ensures the frontend service waits for the backend to be ready.
+    depends_on:
+      - server
+    networks:
+      - taskmng-network
+
+  # The backend service (Express application).
+  server:
+    # Build the image from the Dockerfile located in the 'server' directory.
+    build:
+      context: ./nest-server
+      dockerfile: Dockerfile
+    # Map port 5000 on the host to port 5000 in the container.
+    # This allows you to access your API at http://localhost:5000.
+    ports:
+      - "4000:4000"
+    # This ensures the backend service waits for the database to be ready.
+    depends_on:
+      - mongo-db
+    # Environment variables for the backend to connect to MongoDB.
+    environment:
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo-db:27017
+      JWT_SECRET: I3uThMkjJ3Lzyx6ci6c72WF6OLdbZVf6S4jPDu7TF9c=
+      JWT_ACCESS_TOKEN_TTL: 300
+      JWT_REFRESH_TOKEN_TTL: 30
+    networks:
+      - taskmng-network
+
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      # Persists data in a named volume
+      - mongodb-data:/data/db
+    networks:
+      - taskmng-network
+
+# Define the named volumes used by the services.
+volumes:
+  mongodb-data:
+
+networks:
+  taskmng-network:

@@ -10,10 +10,10 @@ export class ConfigurationService {
   constructor() {
     try {
       const result = dotenv.config();
-      this.logger.log(`load application config: ${JSON.stringify(result)}`);
-      if (result.error) {
+      if (!result) {
         this.logger.warn('Error loading .env file, using default values');
       }
+      this.logger.log(`load application config: ${JSON.stringify(result)}`);
     } catch (error) {
       this.logger.warn('Error loading .env file, using default values');
     }
@@ -32,7 +32,7 @@ export class ConfigurationService {
   }
 
   get mongoUri(): string {
-    return process.env.MONGO_URI || 'mongodb://localhost:27017/taskmng-db';
+    return process.env.MONGODB_URI || 'mongodb://localhost:27017/taskmng-db';
   }
 
   get JWT() {
