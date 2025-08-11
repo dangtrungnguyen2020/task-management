@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   NotFoundException,
   Param,
   Post,
@@ -28,6 +29,7 @@ import { Connection } from 'mongoose';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export default class TaskController {
+  logger = new Logger(TaskController.name);
   constructor(
     private readonly taskService: TaskService,
     private readonly projectService: ProjectService,
@@ -90,18 +92,22 @@ export default class TaskController {
     @Body(new ValidationPipe()) data: UpdateTaskDto,
   ) {
     try {
-      const updatedTask = await this.taskService.model.findOneUpdate(
-        { _id: taskId, projectId },
-        data,
-        { new: true },
-      );
-      if (!updatedTask) {
-        throw new NotFoundException(
-          `Task with ID "${taskId}" not found in project "${projectId}"`,
-        );
+      const task = await this.taskService.findOne({
+        _id: taskId,
+        projectId,
+      });
+      if (!task) {
+        throw new NotFoundException(`Task with ID "${task}" not found`);
       }
+      const result = await this.taskService.update(taskId, data);
+      this.logger.log(
+        `### task updated ${taskId}, data: ${JSON.stringify(data)}, result: ${result}`,
+      );
 
-      return updatedTask;
+      if (!result) {
+        throw new NotFoundException(`Task with ID "${taskId}" not found`);
+      }
+      return result;
     } catch (error: any) {
       throw new NotFoundException(
         `Task with ID "${taskId}" not found in project "${projectId}"`,
@@ -116,18 +122,19 @@ export default class TaskController {
     @Param('taskId') taskId: string,
   ) {
     try {
-      const updatedTask = await this.taskService.model.findByIdAndUpdate(
-        { _id: taskId, projectId },
-        { deleted: true },
-        { new: true },
-      );
-      if (!updatedTask) {
-        throw new NotFoundException(
-          `Task with ID "${taskId}" not found in project "${projectId}"`,
-        );
+      const task = await this.taskService.findOne({
+        _id: taskId,
+        projectId,
+      });
+      if (!task) {
+        throw new NotFoundException(`Task with ID "${task}" not found`);
       }
+      const result = await this.taskService.update(taskId, {
+        deleted: true,
+      });
+      this.logger.log(`### task removed ${taskId}, result: ${result}`);
 
-      return updatedTask;
+      return result;
     } catch (error: any) {
       throw new NotFoundException(
         `Task with ID "${taskId}" not found in project "${projectId}"`,

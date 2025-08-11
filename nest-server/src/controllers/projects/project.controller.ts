@@ -83,7 +83,7 @@ export class ProjectController {
       $and: [{ _id: id }, { ownerId: userId }],
     });
     if (!project) {
-      throw new UnauthorizedException(`Unauthorized`);
+      throw new NotFoundException(`Project with ID "${id}" not found`);
     }
     const updatedProject = await this.projectService.update(
       id,
