@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -56,8 +57,8 @@ export default class TaskController {
   @Get()
   async findAll(
     @Param('projectId') projectId: string,
-    page: number = 1,
-    limit: number = 10,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
   ) {
     const skip = (page - 1) * limit;
 
@@ -73,7 +74,7 @@ export default class TaskController {
     @Param('projectId') projectId: string,
     @Param('taskId') taskId: string,
   ) {
-    const task = await this.taskService.findOne(taskId);
+    const task = await this.taskService.findById(taskId);
     if (!task && task.projectId != (projectId as any)) {
       throw new NotFoundException(
         `Task with ID "${taskId}" not found in project "${projectId}"`,
@@ -88,14 +89,11 @@ export default class TaskController {
     @Param('taskId') taskId: string,
     @Body(new ValidationPipe()) data: UpdateTaskDto,
   ) {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-
     try {
-      const updatedTask = await this.taskService.model.findByIdAndUpdate(
-        { taskId, projectId },
+      const updatedTask = await this.taskService.model.findOneUpdate(
+        { _id: taskId, projectId },
         data,
-        { session },
+        { new: true },
       );
       if (!updatedTask) {
         throw new NotFoundException(
@@ -103,15 +101,11 @@ export default class TaskController {
         );
       }
 
-      await session.commitTransaction();
       return updatedTask;
     } catch (error: any) {
-      await session.abortTransaction();
       throw new NotFoundException(
         `Task with ID "${taskId}" not found in project "${projectId}"`,
       );
-    } finally {
-      session.endSession();
     }
   }
 
@@ -121,14 +115,11 @@ export default class TaskController {
     @Param('projectId') projectId: string,
     @Param('taskId') taskId: string,
   ) {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-
     try {
       const updatedTask = await this.taskService.model.findByIdAndUpdate(
-        { taskId, projectId },
+        { _id: taskId, projectId },
         { deleted: true },
-        { session },
+        { new: true },
       );
       if (!updatedTask) {
         throw new NotFoundException(
@@ -136,15 +127,11 @@ export default class TaskController {
         );
       }
 
-      await session.commitTransaction();
       return updatedTask;
     } catch (error: any) {
-      await session.abortTransaction();
       throw new NotFoundException(
         `Task with ID "${taskId}" not found in project "${projectId}"`,
       );
-    } finally {
-      session.endSession();
     }
   }
 }

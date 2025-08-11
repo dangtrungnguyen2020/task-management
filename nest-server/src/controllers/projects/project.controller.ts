@@ -12,6 +12,7 @@ import {
   ValidationPipe,
   UseGuards,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { ProjectDto } from './dtos/project.dto';
@@ -45,8 +46,8 @@ export class ProjectController {
   @Get()
   async findAll(
     @CurrentUser('id') userId: string,
-    page: number = 1,
-    limit: number = 10,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
   ) {
     const skip = (page - 1) * limit;
     return this.projectService.model
@@ -62,7 +63,7 @@ export class ProjectController {
   @Get(':id')
   async findOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
     const project = await this.projectService.findOne({
-      $and: [{ id }, { $or: [{ ownerId: userId }, { members: userId }] }],
+      $and: [{ _id: id }, { $or: [{ ownerId: userId }, { members: userId }] }],
     });
     if (!project) {
       // Throw a NotFoundException if the project doesn't exist.
@@ -79,7 +80,7 @@ export class ProjectController {
     @Body(new ValidationPipe()) updateProjectDto: ProjectDto,
   ) {
     const project = await this.projectService.findOne({
-      $and: [{ id }, { ownerId: userId }],
+      $and: [{ _id: id }, { ownerId: userId }],
     });
     if (!project) {
       throw new UnauthorizedException(`Unauthorized`);
@@ -98,7 +99,7 @@ export class ProjectController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@CurrentUser('id') userId: string, @Param('id') id: string) {
     const project = await this.projectService.findOne({
-      $and: [{ id }, { ownerId: userId }],
+      $and: [{ _id: id }, { ownerId: userId }],
     });
     if (!project) {
       throw new UnauthorizedException(`Unauthorized`);
